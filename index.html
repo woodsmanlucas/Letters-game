@@ -1,0 +1,233 @@
+<html><head><script>
+selectedLetter = 'a'
+letters = []
+score = 0;
+gameRunning = false;
+
+
+document.getElementsByTagName('img').ondragstart = function() {
+	return false;
+}
+
+function makeDivs(){
+	var div1 = document.createElement('div')
+	div1.style.height='100vh'
+	div1.style.width='100vw'
+	div1.id = 'd1'
+	div1.style.backgroundColor='pink'
+	document.body.appendChild(div1)
+}
+
+function generateLetter(){
+	if(gameRunning){
+		let a ='a'.charCodeAt(0);
+	let z = 'z'.charCodeAt(0);
+	let letter = String.fromCharCode(Math.floor(Math.random()*(1+z-a)+a));
+	let speed = Math.floor(Math.random()*10+1);
+	let size = Math.floor(Math.random()*60+30);
+
+
+	// Use top
+	let positionY = 0;
+	// Use left
+	let positionX = Math.floor(Math.random()*(window.innerWidth-size));
+
+	// Create Element and add attributes
+	var img     = document.createElement('img')
+	img.src     = 'images/letters/' + letter + '.png'
+	img.style.position = 'absolute';
+	img.style.left = positionX + 'px'
+	img.id      = letter
+	img.title   = letter
+	img.alt     = letter
+	img.height  = size
+	img.isAlive = true
+	// TODO
+	img.onclick = handleClick
+		
+	document.getElementsByTagName('div')[0].appendChild(img)
+
+	return {'value': letter, 'speed': speed, size, positionY, positionX, img}
+	}
+	
+}
+
+function updateGameState(){
+	move();
+	deleteLetters();
+
+}
+
+function handleClick(e){
+	console.log(this)
+	for(i in letters){
+		if(letter.img == this){
+			letter = letters[i];
+		}
+	}
+	this.isAlive = false;
+	calcScoreClick(letter);	
+	deleteLetters()
+}
+
+function handleKey(e){
+	var keycode = e.which
+	console.log(keycode)
+
+	if(e.which >= 65 && e.which <= 90){
+		keycode += 32
+		selectedLetter = String.fromCharCode(keycode)
+		console.log(selectedLetter)
+		for(i in letters){
+			if(selectedLetter == letters[i].value){
+				letters[i].img.isAlive = false;
+				calcScorePress(letters[i]);
+			}
+		}
+		deleteLetters()
+	}
+}
+
+function calcScorePress(letter) {
+	if(gameRunning){
+		score += letter.speed;
+		updateScoreBoard();
+	}
+};
+
+function calcScoreClick(letter) {
+	if(gameRunning){
+	score += letter.speed;
+	score = score + 1/letter.size;
+	updateScoreBoard();	
+	}
+};
+
+function updateScoreBoard() {
+	score = Math.round(score);
+	document.getElementById("score").innerHTML = "Score: "+ score;
+}
+
+function isAtBottom(letter){
+	return window.innerHeight <= letter.positionY
+}
+
+function deleteLetters(){
+	for(i in letters){
+		if(!letters[i].img.isAlive){
+			letters[i].img.remove()
+			if(gameRunning){
+				letters[i] = generateLetter()
+			}
+		}
+	}
+}
+
+function initGameState(){
+	gameRunning = true;
+	const totalLetters = 8;
+	for(let i = 0; i < totalLetters; i++){
+		letters[i] = generateLetter();
+	}
+	
+}
+
+function move(){
+	for(letter of letters){
+		letter.positionY += letter.speed;
+		letter.img.style.top = letter.positionY;
+		letter.img.isAlive = !isAtBottom(letter);
+	}
+}
+
+function makeImages(){
+	for(let i = 'a'.charCodeAt(0); i <= 'z'.charCodeAt(0); i++){
+
+	}
+}
+
+function endGame(){
+	console.log("game over")
+	gameRunning = false;
+	document.getElementById('gameOver').innerHTML = 'GAME OVER!'
+	// clearInterval(game);
+	
+}
+
+// function move(){
+// 	var firstDiv = document.getElementsByTagName('div')[0]
+
+// 	if(this.nextSibling != null){
+// 		this.parentNode.insertBefore(this.nextSibling, this)
+// 	}else if(this.parentNode.nextSibling != null){
+// 		this.parentNode.nextSibling.appendChild(this)
+// 	}else{
+// 		firstDiv.insertBefore(this, firstDiv.firstChild)
+// 	}
+// }
+
+
+// function moveLetterRight(){
+
+// 	var letterToMove = document.getElementById(selectedLetter)
+
+// 	var firstDiv = document.getElementsByTagName('div')[0]
+
+// 	if(letterToMove.nextSibling != null){
+// 		letterToMove.parentNode.insertBefore(letterToMove.nextSibling, letterToMove)
+// 	}else if(letterToMove.parentNode.nextSibling != null){
+// 		letterToMove.parentNode.nextSibling.appendChild(letterToMove)
+// 	}else{
+// 		firstDiv.insertBefore(letterToMove, firstDiv.firstChild)
+// 	}
+// }
+
+// function moveLetterLeft(){
+
+// 	var letterToMove = document.getElementById(selectedLetter)
+
+// 	var firstDiv = document.getElementsByTagName('div')[0]
+
+// 	if(letterToMove.previousSibling != null){
+// 		letterToMove.parentNode.insertBefore(letterToMove, letterToMove.previousSibling)
+// 	}else if(letterToMove.previousSibling == null && 
+// 	         letterToMove.parentNode.previousSibling == null){
+// 		// the top-left-most image now moves to be the last image of the last div
+// 		document.getElementsByTagName('div')[
+// 			document.getElementsByTagName('div').length-1].appendChild(letterToMove)
+// 	}else{
+// 		// this is the first image in the non-first div
+// 		// move this image to the end of the previous div
+// 		letterToMove.parentNode.previousSibling.appendChild(letterToMove)
+// 	}
+// }
+
+
+onload = function(){
+	makeDivs()
+	initGameState()
+	let game = setInterval(updateGameState, 20);
+	let timer = setTimeout(endGame, 60000);
+}
+
+function handleKeyPress(evt){
+	//alert(evt.which)
+	
+	var keycode = evt.which
+	
+	if(evt.which >= 65 && evt.which <= 90){	
+		keycode += 32
+		selectedLetter = String.fromCharCode(keycode)
+	}else if(evt.which == 39){
+		moveLetterRight()
+	}else if(evt.which == 37){
+		moveLetterLeft()
+	}
+}
+
+onkeydown=handleKey
+
+</script></head><body>
+<h1 id="score" style="position: fixed; top: 0; right: 0; margin: 10px" >Score: </h1>
+<h1 id="gameOver" style="position: fixed; top: 50%; left: 50%; transform: translateX(-50%)"></h1>	
+</body></html>
